@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Menu, Search } from "lucide-react";
 import profile from "../assets/logo.png";
 
 const AdminNavbar = () => {

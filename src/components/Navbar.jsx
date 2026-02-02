@@ -197,7 +197,7 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
             className="text-white text-lg font-medium py-3.5 px-4 text-left transition-all duration-300 rounded-lg hover:text-[#F49B0F] hover:bg-white/5 block"
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            {t("nav.game")}
+            {t("game")}
           </Link>
 
           <button
