@@ -106,17 +106,15 @@ function Register({ selectedLanguage }) {
       if (response.ok) {
         const data = await response.json();
 
-        // Store token in localStorage
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
         // Show success notification
-        Notify.success("Registration successful! Redirecting to login...");
+        Notify.success("Registration successful! Please verify your email.");
 
-        // Redirect to login after a short delay
+        // Redirect to OTP verification page with email
         setTimeout(() => {
-          navigate("/login");
-        }, 1500);
+          navigate("/verify-otp", {
+            state: { email: formData.email },
+          });
+        }, 1000);
       } else {
         const errorData = await response.json();
         const errorMsg = errorData.message || "Registration failed";

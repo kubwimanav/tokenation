@@ -21,6 +21,7 @@ import GameHistory from './tokenman/GameHistory'
 import CommissionPage from './tokenman/CommissionPage'
 import AdminAvailableTable from './admindashboard/AdminAvailableTable'
 import ScrollTop from './components/ScrollTop'
+import OtpVerification from './components/Otpverification'
 
 function App() {
   const [selectedLanguage, setSelectedLanguage] = useState(() => {
@@ -207,9 +208,8 @@ function App() {
  
 
   return (
-    
     <Router>
-        <ScrollTop />
+      <ScrollTop />
       <div className="app">
         {/* Hidden Google Translate Element */}
         <div id="google_translate_element" style={{ display: "none" }}></div>
@@ -250,6 +250,10 @@ function App() {
             <Route
               path="/register"
               element={<Register selectedLanguage={selectedLanguage} />}
+            />
+            <Route
+              path="/otp"
+              element={<OtpVerification selectedLanguage={selectedLanguage} />}
             />
           </Route>
 
@@ -292,7 +296,7 @@ function App() {
               element={<AdminHome selectedLanguage={selectedLanguage} />}
             />
             <Route
-              path='admin'
+              path="admin"
               element={<AdminHome selectedLanguage={selectedLanguage} />}
             />
             <Route
