@@ -6,7 +6,7 @@ import billiardBg from "../assets/billiard.jpeg";
 import logo from "../assets/logo.png";
 import translations from "../translations.json";
 
-function OtpVerification({ selectedLanguage }) {
+function Otpverification({ selectedLanguage }) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(60);
@@ -392,4 +392,4 @@ function OtpVerification({ selectedLanguage }) {
   );
 }
 
-export default OtpVerification;
+export default Otpverification;
