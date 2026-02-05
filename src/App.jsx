@@ -21,7 +21,7 @@ import GameHistory from './tokenman/GameHistory'
 import CommissionPage from './tokenman/CommissionPage'
 import AdminAvailableTable from './admindashboard/AdminAvailableTable'
 import ScrollTop from './components/ScrollTop'
-import OtpVerification from './components/Otpverification'
+import Otpverification from './components/Otpverification'
 
 function App() {
   const [selectedLanguage, setSelectedLanguage] = useState(() => {
@@ -253,7 +253,7 @@ function App() {
             />
             <Route
               path="/otp"
-              element={<OtpVerification selectedLanguage={selectedLanguage} />}
+              element={<Otpverification selectedLanguage={selectedLanguage} />}
             />
           </Route>
 
