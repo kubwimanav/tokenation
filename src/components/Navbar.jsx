@@ -45,8 +45,6 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
-
-
   const scrollToSection = (sectionId) => {
     setIsMobileMenuOpen(false);
     if (location.pathname !== "/") {
@@ -103,14 +101,22 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
 
             <Link
               to="/game"
-              className="relative text-white font-medium text-[16px] px-3 py-2 transition-all duration-300 hover:text-[#F49B0F] inline-block"
+              className={`relative text-white font-medium text-[16px] px-3 py-2 transition-all duration-300 hover:text-[#F49B0F] inline-block ${
+                location.pathname === "/game"
+                  ? "after:absolute after:-bottom-0.5 after:left-5 after:right-5 after:h-0.75 after:bg-linear-to-r after:from-[#F49B0F] after:via-[#FFD700] after:to-[#F49B0F] after:rounded-sm"
+                  : ""
+              }`}
             >
               {t("Game")}
             </Link>
 
             <Link
               to="/login"
-              className="relative text-white font-medium text-[16px] px-3 py-2 transition-all duration-300 hover:text-[#F49B0F] inline-block"
+              className={`relative text-white font-medium text-[16px] px-3 py-2 transition-all duration-300 hover:text-[#F49B0F] inline-block ${
+                location.pathname === "/login"
+                  ? "after:absolute after:-bottom-0.5 after:left-5 after:right-5 after:h-0.75 after:bg-linear-to-r after:from-[#F49B0F] after:via-[#FFD700] after:to-[#F49B0F] after:rounded-sm"
+                  : ""
+              }`}
             >
               {t("Login")}
             </Link>
@@ -164,10 +170,11 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
             {t("nav.home")}
           </button>
 
-
           <Link
             to="/game"
-            className="text-white text-lg font-medium py-3.5 px-4 text-left transition-all duration-300 rounded-lg hover:text-[#F49B0F] hover:bg-white/5 block"
+            className={`text-white text-lg font-medium py-3.5 px-4 text-left transition-all duration-300 rounded-lg hover:text-[#F49B0F] hover:bg-white/5 block ${
+              location.pathname === "/game" ? "text-[#F49B0F] bg-white/8" : ""
+            }`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {t("game")}
@@ -175,7 +182,9 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
 
           <Link
             to="/login"
-            className="text-white text-lg font-medium py-3.5 px-4 text-left transition-all duration-300 rounded-lg hover:text-[#F49B0F] hover:bg-white/5 block"
+            className={`text-white text-lg font-medium py-3.5 px-4 text-left transition-all duration-300 rounded-lg hover:text-[#F49B0F] hover:bg-white/5 block ${
+              location.pathname === "/login" ? "text-[#F49B0F] bg-white/8" : ""
+            }`}
             onClick={() => setIsMobileMenuOpen(false)}
           >
             {t("Login")}
