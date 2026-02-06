@@ -104,74 +104,76 @@ function Home({ selectedLanguage, translations }) {
     };
   }, []);
 
-  const billiardGames = [
-    {
-      name: "8-Ball Pool",
-      image: null, // Add your image path here: "../assets/8ball.jpg"
-      icon: "🎱",
-      players: "12.4K",
-      stakes: "500-50K Tokens",
-      color: "from-blue-600 to-cyan-500",
-      hot: true,
-    },
-    {
-      name: "9-Ball Rush",
-      image: null, // Add your image path here: "../assets/9ball.jpg"
-      icon: "🟡",
-      players: "8.7K",
-      stakes: "1K-100K Tokens",
-      color: "from-yellow-600 to-orange-500",
-    },
-    {
-      name: "Snooker Pro",
-      image: null, // Add your image path here: "../assets/snooker.jpg"
-      icon: "🔴",
-      players: "5.3K",
-      stakes: "2K-200K Tokens",
-      color: "from-green-600 to-emerald-500",
-    },
-    {
-      name: "Speed Pool",
-      image: null, // Add your image path here: "../assets/speedpool.jpg"
-      icon: "⚡",
-      players: "9.1K",
-      stakes: "300-30K Tokens",
-      color: "from-purple-600 to-pink-500",
-      hot: true,
-    },
-    {
-      name: "Straight Pool",
-      image: null, // Add your image path here: "../assets/straightpool.jpg"
-      icon: "🎯",
-      players: "4.2K",
-      stakes: "1K-25K Tokens",
-      color: "from-red-600 to-rose-500",
-    },
-    {
-      name: "Pool Master",
-      image: null, // Add your image path here: "../assets/poolmaster.jpg"
-      icon: "👑",
-      players: "6.8K",
-      stakes: "2K-80K Tokens",
-      color: "from-indigo-600 to-blue-500",
-    },
-    {
-      name: "Billiard Blitz",
-      image: null, // Add your image path here: "../assets/blitz.jpg"
-      icon: "💥",
-      players: "7.5K",
-      stakes: "500-40K Tokens",
-      color: "from-pink-600 to-purple-500",
-    },
-    {
-      name: "Classic Pool",
-      image: null, // Add your image path here: "../assets/classic.jpg"
-      icon: "🎱",
-      players: "5.9K",
-      stakes: "800-60K Tokens",
-      color: "from-teal-600 to-cyan-500",
-    },
-  ];
+const billiardGames = [
+  {
+    name: "8-Ball Pool",
+    image: "https://source.unsplash.com/800x600/?8-ball,pool",
+    icon: "🎱",
+    players: "12.4K",
+    stakes: "500-50K Tokens",
+    color: "from-blue-600 to-cyan-500",
+    hot: true,
+  },
+  {
+    name: "9-Ball Rush",
+    image: "https://source.unsplash.com/800x600/?9-ball,pool",
+    icon: "🟡",
+    players: "8.7K",
+    stakes: "1K-100K Tokens",
+    color: "from-yellow-600 to-orange-500",
+  },
+  {
+    name: "Snooker Pro",
+    image: "https://source.unsplash.com/800x600/?snooker,table",
+    icon: "🔴",
+    players: "5.3K",
+    stakes: "2K-200K Tokens",
+    color: "from-green-600 to-emerald-500",
+  },
+  {
+    name: "Speed Pool",
+    image: "https://source.unsplash.com/800x600/?pool,action",
+    icon: "⚡",
+    players: "9.1K",
+    stakes: "300-30K Tokens",
+    color: "from-purple-600 to-pink-500",
+    hot: true,
+  },
+  {
+    name: "Straight Pool",
+    image: "https://source.unsplash.com/800x600/?billiards,table",
+    icon: "🎯",
+    players: "4.2K",
+    stakes: "1K-25K Tokens",
+    color: "from-red-600 to-rose-500",
+  },
+  {
+    name: "Pool Master",
+    image: "https://source.unsplash.com/800x600/?professional,pool",
+    icon: "👑",
+    players: "6.8K",
+    stakes: "2K-80K Tokens",
+    color: "from-indigo-600 to-blue-500",
+  },
+  {
+    name: "Billiard Blitz",
+    image: "https://source.unsplash.com/800x600/?billiard,game",
+    icon: "💥",
+    players: "7.5K",
+    stakes: "500-40K Tokens",
+    color: "from-pink-600 to-purple-500",
+  },
+  {
+    name: "Classic Pool",
+    image: "https://source.unsplash.com/800x600/?classic,pool",
+    icon: "🎱",
+    players: "5.9K",
+    stakes: "800-60K Tokens",
+    color: "from-teal-600 to-cyan-500",
+  },
+];
+
+
 
   return (
     <div className="relative w-full overflow-x-hidden bg-[#0d1f1f]">

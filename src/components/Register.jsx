@@ -111,7 +111,7 @@ function Register({ selectedLanguage }) {
 
         // Redirect to OTP verification page with email
         setTimeout(() => {
-          navigate("/verify-otp", {
+          navigate("/otp", {
             state: { email: formData.email },
           });
         }, 1000);

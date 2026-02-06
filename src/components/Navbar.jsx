@@ -101,19 +101,6 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
               {t("nav.home")}
             </button>
 
-            <button
-              className="relative text-white font-medium text-[16px] px-3 py-2 transition-all duration-300 hover:text-[#F49B0F] inline-block"
-              onClick={() => scrollToSection("services")}
-            >
-              {t("nav.services")}
-            </button>
-
-            <button
-              className="relative text-white font-medium text-[16px] px-3 py-2 transition-all duration-300 hover:text-[#F49B0F] inline-block"
-              onClick={() => scrollToSection("about")}
-            >
-              {t("nav.about")}
-            </button>
 
             <Link
               to="/game"
@@ -130,7 +117,7 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
             </button>
 
             {/* Language Selector */}
-            <div className="ml-6 relative">
+            <div className="ml-30 relative">
               <div className="relative">
                 <select
                   value={selectedLanguage}
