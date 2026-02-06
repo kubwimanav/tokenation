@@ -289,7 +289,7 @@ const BilliardBookingSystem = () => {
 
                 <div className="border-t-2 border-yellow-400 my-2"></div>
 
-                <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="grid grid-cols-2 gap-2 mb-2">
                   <div>
                     <p className="text-xs font-bold text-gray-500 mb-0.5">
                       Start
@@ -304,26 +304,6 @@ const BilliardBookingSystem = () => {
                     </p>
                     <span className="text-xs font-bold text-gray-900">
                       {formatTime(table.scheduledEndTime)}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-500 mb-0.5">
-                      Status
-                    </p>
-                    <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                        table.status === "LIVE"
-                          ? "bg-green-100 text-green-800"
-                          : table.status === "BOOKED"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {table.status === "LIVE"
-                        ? "Live"
-                        : table.status === "BOOKED"
-                          ? "Booked"
-                          : "Idle"}
                     </span>
                   </div>
                 </div>
@@ -345,6 +325,23 @@ const BilliardBookingSystem = () => {
                     </span>
                     <span className="font-bold text-gray-900">
                       {table.tokenPrice}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                        table.status === "LIVE"
+                          ? "bg-green-100 text-green-800"
+                          : table.status === "BOOKED"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {table.status === "LIVE"
+                        ? "Live"
+                        : table.status === "BOOKED"
+                          ? "Booked"
+                          : "Idle"}
                     </span>
                   </div>
                 </div>
