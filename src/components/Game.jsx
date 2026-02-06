@@ -289,7 +289,7 @@ const BilliardBookingSystem = () => {
 
                 <div className="border-t-2 border-yellow-400 my-2"></div>
 
-                <div className="grid grid-cols-2 gap-2 mb-2">
+                <div className="grid grid-cols-3 gap-2 mb-2">
                   <div>
                     <p className="text-xs font-bold text-gray-500 mb-0.5">
                       Start
@@ -304,6 +304,26 @@ const BilliardBookingSystem = () => {
                     </p>
                     <span className="text-xs font-bold text-gray-900">
                       {formatTime(table.scheduledEndTime)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 mb-0.5">
+                      Status
+                    </p>
+                    <span
+                      className={`text-xs font-bold ${
+                        table.status === "ongoing"
+                          ? "text-green-600"
+                          : table.status === "completed"
+                            ? "text-blue-600"
+                            : "text-yellow-600"
+                      }`}
+                    >
+                      {table.status === "ongoing"
+                        ? "Ongoing"
+                        : table.status === "completed"
+                          ? "Completed"
+                          : "Pending"}
                     </span>
                   </div>
                 </div>

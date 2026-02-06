@@ -1,52 +1,33 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FaArrowLeft, FaCheckCircle } from "react-icons/fa";
+import { FaArrowLeft, FaCheckCircle, FaMobileAlt } from "react-icons/fa";
 import { Notify } from "notiflix/build/notiflix-notify-aio";
 import billiardBg from "../assets/billiard.jpeg";
 import logo from "../assets/logo.png";
 import translations from "../translations.json";
 
-function Otpv ({ selectedLanguage }) {
+function Otpv({ selectedLanguage }) {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [resendTimer, setResendTimer] = useState(60);
-  const [canResend, setCanResend] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const inputRefs = useRef([]);
 
-  // Get email from navigation state
-  const email = location.state?.email || "";
+  // Get phone number from navigation state (optional)
+  const initialPhone = location.state?.phoneNumber || "";
 
   // Translation function
   const t = (key) => {
     return translations[selectedLanguage]?.[key] || translations.en[key] || key;
   };
 
-  // Redirect if no email provided
+  // Initialize with navigation state if available
   useEffect(() => {
-    if (!email) {
-      Notify.failure("No email provided. Redirecting to registration...");
-      navigate("/register");
+    if (initialPhone) {
+      setPhoneNumber(initialPhone);
     }
-  }, [email, navigate]);
-
-  // Timer for resend OTP
-  useEffect(() => {
-    let interval;
-    if (resendTimer > 0 && !canResend) {
-      interval = setInterval(() => {
-        setResendTimer((prev) => {
-          if (prev <= 1) {
-            setCanResend(true);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [resendTimer, canResend]);
+  }, [initialPhone]);
 
   // Handle OTP input change
   const handleChange = (index, value) => {
@@ -95,6 +76,17 @@ function Otpv ({ selectedLanguage }) {
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
 
+    // Validate phone number
+    if (!phoneNumber) {
+      Notify.failure("Please enter your phone number");
+      return;
+    }
+
+    if (phoneNumber.length < 10) {
+      Notify.failure("Please enter a valid phone number");
+      return;
+    }
+
     const otpCode = otp.join("");
 
     if (otpCode.length !== 6) {
@@ -106,14 +98,14 @@ function Otpv ({ selectedLanguage }) {
 
     try {
       const response = await fetch(
-        "https://token-backend-omega.vercel.app/api/verify-otp/tokenman",
+        "https://token-backend-omega.vercel.app/api/otp/verify",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: email,
+            phoneNumber: phoneNumber,
             otp: otpCode,
           }),
         },
@@ -122,7 +114,9 @@ function Otpv ({ selectedLanguage }) {
       if (response.ok) {
         const data = await response.json();
 
-        Notify.success("Email verified successfully! Redirecting to login...");
+        Notify.success(
+          "Phone number verified successfully! Redirecting to login...",
+        );
 
         // Redirect to login after a short delay
         setTimeout(() => {
@@ -130,7 +124,8 @@ function Otpv ({ selectedLanguage }) {
         }, 1500);
       } else {
         const errorData = await response.json();
-        const errorMsg = errorData.message || "Invalid OTP. Please try again.";
+        const errorMsg =
+          errorData.message || "Invalid OTP or phone number. Please try again.";
         Notify.failure(errorMsg);
 
         // Clear OTP inputs on error
@@ -142,44 +137,6 @@ function Otpv ({ selectedLanguage }) {
       Notify.failure("Network error. Please try again.");
       setOtp(["", "", "", "", "", ""]);
       inputRefs.current[0]?.focus();
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Resend OTP
-  const handleResendOtp = async () => {
-    if (!canResend) return;
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(
-        "https://token-backend-omega.vercel.app/api/resend-otp/tokenman",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email: email,
-          }),
-        },
-      );
-
-      if (response.ok) {
-        Notify.success("OTP has been resent to your email");
-        setResendTimer(60);
-        setCanResend(false);
-        setOtp(["", "", "", "", "", ""]);
-        inputRefs.current[0]?.focus();
-      } else {
-        const errorData = await response.json();
-        Notify.failure(errorData.message || "Failed to resend OTP");
-      }
-    } catch (error) {
-      console.error("Resend OTP error:", error);
-      Notify.failure("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -201,50 +158,79 @@ function Otpv ({ selectedLanguage }) {
                 {/* Header */}
                 <div className="text-center mb-8">
                   <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-                    Verify Your Email
+                    Verify OTP Code
                   </h1>
-                  <p className="text-gray-600 mb-2">
-                    We've sent a 6-digit verification code to
-                  </p>
-                  <p className="text-blue-600 font-semibold text-sm md:text-base break-all px-4">
-                    {email}
+                  <p className="text-gray-600">
+                    Enter your phone number and the verification code that was
+                    sent to you
                   </p>
                 </div>
 
-                {/* OTP Form */}
-                <form onSubmit={handleVerifyOtp} className="space-y-8">
-                  {/* OTP Inputs */}
-                  <div className="flex justify-center gap-2 md:gap-3">
-                    {otp.map((digit, index) => (
+                {/* Verification Form */}
+                <form onSubmit={handleVerifyOtp} className="space-y-6">
+                  {/* Phone Number Input */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <FaMobileAlt className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
                       <input
-                        key={index}
-                        ref={(el) => (inputRefs.current[index] = el)}
-                        type="text"
-                        inputMode="numeric"
-                        maxLength={1}
-                        value={digit}
-                        onChange={(e) => handleChange(index, e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(index, e)}
-                        onPaste={handlePaste}
-                        className={`w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold border-2 rounded-lg 
-                          transition-all duration-200 outline-none
-                          ${digit ? "border-blue-500 bg-blue-50" : "border-gray-300"}
-                          focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:scale-105
-                          disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60`}
-                        autoFocus={index === 0}
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        placeholder="Enter your phone number"
+                        className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-300 rounded-lg 
+                          focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none
+                          transition-all duration-200 text-lg"
                         disabled={isLoading}
                       />
-                    ))}
+                    </div>
+                    <p className="mt-2 text-xs text-gray-500">
+                      Include country code (e.g., +250788123456)
+                    </p>
+                  </div>
+
+                  {/* OTP Code Label */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3 text-center">
+                      Verification Code
+                    </label>
+
+                    {/* OTP Inputs */}
+                    <div className="flex justify-center gap-2 md:gap-3">
+                      {otp.map((digit, index) => (
+                        <input
+                          key={index}
+                          ref={(el) => (inputRefs.current[index] = el)}
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={1}
+                          value={digit}
+                          onChange={(e) => handleChange(index, e.target.value)}
+                          onKeyDown={(e) => handleKeyDown(index, e)}
+                          onPaste={handlePaste}
+                          className={`w-12 h-14 md:w-14 md:h-16 text-center text-2xl font-bold border-2 rounded-lg 
+                            transition-all duration-200 outline-none
+                            ${digit ? "border-blue-500 bg-blue-50" : "border-gray-300"}
+                            focus:border-blue-500 focus:ring-4 focus:ring-blue-100 focus:scale-105
+                            disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60`}
+                          disabled={isLoading}
+                        />
+                      ))}
+                    </div>
                   </div>
 
                   {/* Verify Button */}
                   <button
                     type="submit"
-                    disabled={isLoading || otp.join("").length !== 6}
+                    disabled={
+                      isLoading || otp.join("").length !== 6 || !phoneNumber
+                    }
                     className={`w-full py-3.5 px-6 rounded-lg font-semibold text-white text-lg
                       transition-all duration-200 shadow-lg
                       ${
-                        isLoading || otp.join("").length !== 6
+                        isLoading || otp.join("").length !== 6 || !phoneNumber
                           ? "bg-gray-400 cursor-not-allowed"
                           : "bg-blue-600 hover:bg-blue-700 hover:shadow-xl active:scale-95"
                       }`}
@@ -273,30 +259,15 @@ function Otpv ({ selectedLanguage }) {
                         Verifying...
                       </span>
                     ) : (
-                      "Verify Email"
+                      "Verify Phone Number"
                     )}
                   </button>
 
-                  {/* Resend Section */}
+                  {/* Help Text */}
                   <div className="text-center">
-                    {!canResend ? (
-                      <p className="text-gray-600 text-sm">
-                        Didn't receive the code?{" "}
-                        <span className="font-semibold text-blue-600">
-                          Resend in {resendTimer}s
-                        </span>
-                      </p>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleResendOtp}
-                        disabled={isLoading}
-                        className="text-blue-600 hover:text-blue-700 font-semibold text-sm 
-                          hover:underline transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Resend Code
-                      </button>
-                    )}
+                    <p className="text-gray-600 text-sm">
+                      Enter the phone number that received the OTP code
+                    </p>
                   </div>
                 </form>
 
@@ -328,11 +299,11 @@ function Otpv ({ selectedLanguage }) {
 
                   {/* Title */}
                   <h2 className="text-4xl font-bold mb-4 text-center">
-                    Almost There!
+                    Verify Your Phone
                   </h2>
                   <p className="text-xl text-center mb-12 text-blue-100 max-w-md">
-                    Just one more step to complete your registration. Enter the
-                    verification code sent to your email.
+                    Complete your registration by verifying your phone number
+                    with the OTP code sent to you.
                   </p>
 
                   {/* Feature Steps */}
@@ -348,7 +319,7 @@ function Otpv ({ selectedLanguage }) {
                         01
                       </div>
                       <span className="text-lg font-medium">
-                        Check your email
+                        Enter your phone number
                       </span>
                     </div>
 
@@ -363,7 +334,7 @@ function Otpv ({ selectedLanguage }) {
                         02
                       </div>
                       <span className="text-lg font-medium">
-                        Enter 6-digit code
+                        Enter the 6-digit OTP
                       </span>
                     </div>
 
@@ -381,6 +352,14 @@ function Otpv ({ selectedLanguage }) {
                         Start using Tega
                       </span>
                     </div>
+                  </div>
+
+                  {/* Info Box */}
+                  <div className="mt-12 p-4 bg-white/10 backdrop-blur-sm rounded-lg">
+                    <p className="text-sm text-blue-100 text-center">
+                      💡 Make sure to enter the same phone number that received
+                      the OTP code
+                    </p>
                   </div>
                 </div>
               </div>

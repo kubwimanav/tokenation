@@ -4,6 +4,7 @@ import { CgAdd } from "react-icons/cg";
 import { IoMdAdd } from "react-icons/io";
 import { useGetTokenmanQuery } from "../Api/Admin/Admin";
 import ReactPaginate from "react-paginate";
+import Notiflix from "notiflix";
 
 export default function AdminTokenManagement() {
   // Sample data based on the screenshot structure
@@ -34,14 +35,47 @@ export default function AdminTokenManagement() {
     });
   };
 
-  const handleDelete = (userId) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      setUsers(users.filter((user) => user.id !== userId));
-    }
+  const handleDelete = async (user) => {
+    Notiflix.Confirm.show(
+      "Delete User",
+      "Are you sure you want to delete this user?",
+      "Yes",
+      "No",
+      async function () {
+        const accessToken = localStorage.getItem("token");
+        Notiflix.Loading.standard("Deleting user...");
+        try {
+          const response = await fetch(
+            `https://token-backend-omega.vercel.app/api/admin/token-men/${user._id}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            },
+          );
+          Notiflix.Loading.remove();
+          if (response.ok) {
+            refetch();
+            Notiflix.Notify.success("User deleted successfully!");
+          } else {
+            const error = await response.json();
+            Notiflix.Notify.failure(error.message || "Failed to delete user");
+          }
+        } catch (error) {
+          Notiflix.Loading.remove();
+          Notiflix.Notify.failure("Failed to delete user");
+        }
+      },
+      function () {
+        // User clicked "No"
+      },
+    );
   };
 
   const handleApprove = async (user) => {
     const accessToken = localStorage.getItem("token");
+    Notiflix.Loading.standard("Approving user...");
     try {
       const response = await fetch(
         `https://token-backend-omega.vercel.app/api/admin/token-men/${user._id}/approve`,
@@ -52,19 +86,23 @@ export default function AdminTokenManagement() {
           },
         },
       );
+      Notiflix.Loading.remove();
       if (response.ok) {
         refetch();
+        Notiflix.Notify.success("User approved successfully!");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to approve user");
+        Notiflix.Notify.failure(error.message || "Failed to approve user");
       }
     } catch (error) {
-      alert("Failed to approve user");
+      Notiflix.Loading.remove();
+      Notiflix.Notify.failure("Failed to approve user");
     }
   };
 
   const handleReject = async (user) => {
     const accessToken = localStorage.getItem("token");
+    Notiflix.Loading.standard("Rejecting user...");
     try {
       const response = await fetch(
         `https://token-backend-omega.vercel.app/api/admin/token-men/${user._id}/reject`,
@@ -75,20 +113,23 @@ export default function AdminTokenManagement() {
           },
         },
       );
+      Notiflix.Loading.remove();
       if (response.ok) {
         refetch();
+        Notiflix.Notify.success("User rejected successfully!");
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to reject user");
+        Notiflix.Notify.failure(error.message || "Failed to reject user");
       }
     } catch (error) {
-      alert("Failed to reject user");
+      Notiflix.Loading.remove();
+      Notiflix.Notify.failure("Failed to reject user");
     }
   };
 
   const handleAddUser = () => {
     if (!newUser.fullName || !newUser.email || !newUser.phone) {
-      alert("Please fill in all required fields");
+      Notiflix.Notify.failure("Please fill in all required fields");
       return;
     }
 
@@ -111,6 +152,7 @@ export default function AdminTokenManagement() {
       phone: "",
       location: "Kigali",
     });
+    Notiflix.Notify.success("User added successfully!");
   };
 
   // Pagination logic
@@ -179,14 +221,14 @@ export default function AdminTokenManagement() {
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
                 {displayuser.length > 0 ? (
-                  displayuser.map((user) => (
+                  displayuser.map((user, index) => (
                     <tr
                       key={user._id}
                       className="hover:bg-gray-50 transition-colors"
                     >
                       <td className="px-2 py-2 sm:px-3 sm:py-2.5 lg:px-4 lg:py-3 whitespace-nowrap">
                         <div className="text-xs sm:text-sm font-mono text-black font-medium">
-                          {user._id}
+                          {index + 1 + pagevisited}
                         </div>
                       </td>
                       <td className="px-2 py-2 sm:px-3 sm:py-2.5 lg:px-4 lg:py-3 whitespace-nowrap">
@@ -225,20 +267,30 @@ export default function AdminTokenManagement() {
                       </td>
                       <td className="px-2 py-2 sm:px-3 sm:py-2.5 lg:px-4 lg:py-3 whitespace-nowrap text-center">
                         <div className="flex justify-center items-center gap-2">
-                          {!user.isApproved && (
+                          {!user.isApproved ? (
+                            // Pending users: Show Approve and Reject buttons
+                            <>
+                              <button
+                                onClick={() => handleApprove(user)}
+                                className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
+                              >
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleReject(user)}
+                                className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-colors"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          ) : (
+                            // Approved users: Show Delete button only
                             <button
-                              onClick={() => handleApprove(user)}
-                              className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200 transition-colors"
+                              onClick={() => handleDelete(user)}
+                              className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-colors flex items-center gap-1"
                             >
-                              Approve
-                            </button>
-                          )}
-                          {user.isApproved && (
-                            <button
-                              onClick={() => handleReject(user)}
-                              className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 hover:bg-red-200 transition-colors"
-                            >
-                              Reject
+                              <Trash2 className="w-3 h-3" />
+                              Delete
                             </button>
                           )}
                         </div>

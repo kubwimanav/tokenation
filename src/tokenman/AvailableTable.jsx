@@ -13,6 +13,7 @@ import {
   Lock,
 } from "lucide-react";
 import { IoMdAdd } from "react-icons/io";
+import { useGetMytablesQuery } from "../Api/tokenman/tokenman";
 
 export default function AvailableTable() {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -32,6 +33,9 @@ export default function AvailableTable() {
     scheduledEndTime: "",
   });
 
+  const { data, isLoading, isError } = useGetMytablesQuery();
+  console.log('mytablesddd',data);
+  
   const [tablesData, setTablesData] = useState([
     {
       id: 1,

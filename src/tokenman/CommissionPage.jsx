@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Trash2,
 } from "lucide-react";
+import { useGetCommissionsQuery } from "../Api/tokenman/tokenman";
 
 export default function CommissionPage() {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -17,6 +18,8 @@ export default function CommissionPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
+  const{data, isLoading, isError} = useGetCommissionsQuery();
+  console.log('commissions',data);
   const [commissionData, setCommissionData] = useState([
     {
       id: 1,
@@ -149,7 +152,7 @@ export default function CommissionPage() {
   const totalGames = commissionData.reduce((sum, item) => sum + item.games, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-4">

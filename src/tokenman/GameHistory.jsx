@@ -1,9 +1,14 @@
 import { Trash2 } from "lucide-react";
 import React, { useState } from "react";
 import { MdDeleteForever } from "react-icons/md";
+import { useGetGameHistoryQuery } from "../Api/tokenman/tokenman";
 
 export default function GameHistory() {
   // Sample data based on the new screenshot structure
+  
+  const{data, isLoading, isError} = useGetGameHistoryQuery();
+  console.log('gamehistory',data);
+  
   const [allGames] = useState([
     {
       id: "game_001",
@@ -185,7 +190,7 @@ export default function GameHistory() {
         {/* Table Container with Overflow */}
         <div className="bg-white rounded-lg overflow-hidden shadow-lg">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px]">
+            <table className="w-full min-w-175">
               <thead>
                 <tr className="bg-[#F59E0B]">
                   <th className="px-4 sm:px-6 py-4 text-left text-[14px] font-semibold text-white tracking-wider">
