@@ -311,15 +311,19 @@ const BilliardBookingSystem = () => {
                       Status
                     </p>
                     <span
-                      className={`text-xs font-bold ${
+                      className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                         table.status === "LIVE"
-                          ? "text-green-600"
+                          ? "bg-green-100 text-green-800"
                           : table.status === "BOOKED"
-                            ? "text-blue-600"
-                            : "text-gray-600"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-red-100 text-red-800"
                       }`}
                     >
-                      {table.status || "IDLE"}
+                      {table.status === "LIVE"
+                        ? "Live"
+                        : table.status === "BOOKED"
+                          ? "Booked"
+                          : "Idle"}
                     </span>
                   </div>
                 </div>
