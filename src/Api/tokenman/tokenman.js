@@ -27,6 +27,12 @@ export const productApi = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    getQrcode: builder.query({
+      query: (tableId) => ({
+        url: `api/tokenman/games/${tableId}/qr-code`,
+        method: "GET",
+      }),
+    }),
 
     createcontact: builder.mutation({
       query: (data) => ({
@@ -55,7 +61,8 @@ export const {
     useGetGameHistoryQuery,
     useGetUserHistoryQuery,
     useGetMytablesQuery,
-    useGetCommissionsQuery,
+  useGetCommissionsQuery,
+  useGetQrcodeQuery,
   useCreatecontactMutation,
   useDeletecontactMutation,
   useDeleteMatchitemMutation,

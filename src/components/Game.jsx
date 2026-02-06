@@ -2,15 +2,17 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { useGetGameQuery } from "../Api/game/game";
 import { Notify } from "notiflix/build/notiflix-notify-aio";
+import { data } from "react-router-dom";
 
 const BilliardBookingSystem = () => {
   const { data: backendData, isLoading, isError } = useGetGameQuery();
+  console.log("ggggggggggggg", backendData);
 
   const [bookedTables, setBookedTables] = useState([]);
   const [bettedTables, setBettedTables] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("All");
   const [popupTable, setPopupTable] = useState(null);
-  const [formData, setFormData] = useState({ phone: "" });
+  const [formData, setFormData] = useState({ phone: "", playerPosition: "" });
   const [isBooking, setIsBooking] = useState(false);
 
   // Format date to readable format
@@ -56,6 +58,11 @@ const BilliardBookingSystem = () => {
       return;
     }
 
+    if (!formData.playerPosition) {
+      Notify.warning("Please select a player position!");
+      return;
+    }
+
     setIsBooking(true);
 
     try {
@@ -69,7 +76,7 @@ const BilliardBookingSystem = () => {
           body: JSON.stringify({
             gameId: popupTable.id,
             phone: formData.phone,
-            paymentAmount: parseInt(popupTable.tokenPrice) || 4000,
+            playerPosition: formData.playerPosition,
           }),
         },
       );
@@ -80,7 +87,7 @@ const BilliardBookingSystem = () => {
         setBookedTables([...bookedTables, tableId]);
         Notify.success("Table booked successfully!");
         setPopupTable(null);
-        setFormData({ phone: "" });
+        setFormData({ phone: "", playerPosition: "" });
       } else {
         Notify.failure(data.message || "Booking failed. Please try again.");
       }
@@ -106,12 +113,12 @@ const BilliardBookingSystem = () => {
 
   const openPopup = (table) => {
     setPopupTable(table);
-    setFormData({ phone: "" });
+    setFormData({ phone: "", playerPosition: "" });
   };
 
   const closePopup = () => {
     setPopupTable(null);
-    setFormData({ phone: "" });
+    setFormData({ phone: "", playerPosition: "" });
   };
 
   // Calculate end time (30 minutes after start time)
@@ -192,6 +199,40 @@ const BilliardBookingSystem = () => {
                   }
                   className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg focus:border-yellow-400 focus:outline-none text-gray-900 text-sm"
                 />
+              </div>
+
+              <div className="mb-3">
+                <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                  Select Your Player
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData({ ...formData, playerPosition: "A" })
+                    }
+                    className={`px-4 py-2.5 rounded-lg border-2 font-bold text-sm transition-all ${
+                      formData.playerPosition === "A"
+                        ? "bg-yellow-400 border-yellow-400 text-black shadow-md"
+                        : "bg-white border-gray-300 text-gray-700 hover:border-yellow-300"
+                    }`}
+                  >
+                    {popupTable.playerAName || "Player A"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData({ ...formData, playerPosition: "B" })
+                    }
+                    className={`px-4 py-2.5 rounded-lg border-2 font-bold text-sm transition-all ${
+                      formData.playerPosition === "B"
+                        ? "bg-yellow-400 border-yellow-400 text-black shadow-md"
+                        : "bg-white border-gray-300 text-gray-700 hover:border-yellow-300"
+                    }`}
+                  >
+                    {popupTable.playerBName || "Player B"}
+                  </button>
+                </div>
               </div>
 
               <div className="mb-4 bg-gray-50 rounded-lg p-3 border border-gray-200">
@@ -289,21 +330,40 @@ const BilliardBookingSystem = () => {
 
                 <div className="border-t-2 border-yellow-400 my-2"></div>
 
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  <div>
-                    <p className="text-xs font-bold text-gray-500 mb-0.5">
-                      Start
-                    </p>
-                    <span className="text-xs font-bold text-gray-900">
-                      {formatTime(table.scheduledStartTime)}
-                    </span>
+                <div className="flex items-start justify-between mb-2">
+                  <div className="grid grid-cols-2 gap-2 flex-1">
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 mb-0.5">
+                        Start
+                      </p>
+                      <span className="text-xs font-bold text-gray-900">
+                        {formatTime(table.scheduledStartTime)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-gray-500 mb-0.5">
+                        End
+                      </p>
+                      <span className="text-xs font-bold text-gray-900">
+                        {formatTime(table.scheduledEndTime)}
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-500 mb-0.5">
-                      End
-                    </p>
-                    <span className="text-xs font-bold text-gray-900">
-                      {formatTime(table.scheduledEndTime)}
+                  <div className="ml-2">
+                    <span
+                      className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                        table.status === "LIVE"
+                          ? "bg-green-100 text-green-800"
+                          : table.status === "BOOKED"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {table.status === "LIVE"
+                        ? "Live"
+                        : table.status === "BOOKED"
+                          ? "Booked"
+                          : "Idle"}
                     </span>
                   </div>
                 </div>
@@ -325,23 +385,6 @@ const BilliardBookingSystem = () => {
                     </span>
                     <span className="font-bold text-gray-900">
                       {table.tokenPrice}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                        table.status === "LIVE"
-                          ? "bg-green-100 text-green-800"
-                          : table.status === "BOOKED"
-                            ? "bg-blue-100 text-blue-800"
-                            : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {table.status === "LIVE"
-                        ? "Live"
-                        : table.status === "BOOKED"
-                          ? "Booked"
-                          : "Idle"}
                     </span>
                   </div>
                 </div>

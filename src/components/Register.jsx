@@ -106,13 +106,25 @@ function Register({ selectedLanguage }) {
       if (response.ok) {
         const data = await response.json();
 
+        // Save verification token to localStorage or sessionStorage
+        if (data.verificationToken) {
+          // Store in localStorage for persistence
+          localStorage.setItem("verificationToken", data.verificationToken);
+
+          // Or use sessionStorage if you want it to expire when browser closes
+          // sessionStorage.setItem('verificationToken', data.verificationToken);
+        }
+
         // Show success notification
         Notify.success("Registration successful! Please verify your email.");
 
-        // Redirect to OTP verification page with email
+        // Redirect to OTP verification page with email and verification token
         setTimeout(() => {
           navigate("/otp", {
-            state: { email: formData.email },
+            state: {
+              email: formData.email,
+              verificationToken: data.verificationToken, // Pass token via navigation state as well
+            },
           });
         }, 1000);
       } else {

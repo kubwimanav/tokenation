@@ -9,11 +9,13 @@ import {
   ChevronDown,
   Trash2,
   Eye,
-  Coins,
-  Lock,
 } from "lucide-react";
 import { IoMdAdd } from "react-icons/io";
-import { useGetMytablesQuery } from "../Api/tokenman/tokenman";
+import { Notify } from "notiflix/build/notiflix-notify-aio";
+import {
+  useGetMytablesQuery,
+  useGetQrcodeQuery,
+} from "../Api/tokenman/tokenman";
 
 export default function AvailableTable() {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -22,6 +24,7 @@ export default function AvailableTable() {
   const itemsPerPage = 4;
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [qrCodeImages, setQrCodeImages] = useState({});
 
   const [newTable, setNewTable] = useState({
     playerAName: "",
@@ -33,91 +36,144 @@ export default function AvailableTable() {
     scheduledEndTime: "",
   });
 
-  const { data, isLoading, isError } = useGetMytablesQuery();
-  console.log('mytablesddd',data);
-  
-  const [tablesData, setTablesData] = useState([
-    {
-      id: 1,
-      name: "Table A",
-      status: "Reserved",
-      tokenPrice: 500,
-      commission: 25,
-      totalTokensSold: 250,
-      revenue: 125000,
-    },
-    {
-      id: 2,
-      name: "Table B",
-      status: "Buy",
-      tokenPrice: 1000,
-      commission: 50,
-      totalTokensSold: 180,
-      revenue: 180000,
-    },
-    {
-      id: 3,
-      name: "Table C",
-      status: "Reserved",
-      tokenPrice: 500,
-      commission: 25,
-      totalTokensSold: 320,
-      revenue: 160000,
-    },
-    {
-      id: 4,
-      name: "Table D",
-      status: "Buy",
-      tokenPrice: 750,
-      commission: 37.5,
-      totalTokensSold: 200,
-      revenue: 150000,
-    },
-    {
-      id: 5,
-      name: "Table E",
-      status: "Reserved",
-      tokenPrice: 500,
-      commission: 25,
-      totalTokensSold: 290,
-      revenue: 145000,
-    },
-    {
-      id: 6,
-      name: "Table F",
-      status: "Buy",
-      tokenPrice: 1000,
-      commission: 50,
-      totalTokensSold: 150,
-      revenue: 150000,
-    },
-    {
-      id: 7,
-      name: "Table G",
-      status: "Reserved",
-      tokenPrice: 500,
-      commission: 25,
-      totalTokensSold: 310,
-      revenue: 155000,
-    },
-    {
-      id: 8,
-      name: "Table H",
-      status: "Buy",
-      tokenPrice: 750,
-      commission: 37.5,
-      totalTokensSold: 220,
-      revenue: 165000,
-    },
-  ]);
+  const { data, isLoading, isError, refetch } = useGetMytablesQuery();
 
-  const handleDelete = (id) => {
+  console.log("mytablesddd", data);
+  const { data: qrcode } = useGetQrcodeQuery();
+  console.log("qrcode", qrcode);
+
+  // Use data from API, fallback to empty array if no data
+  const tablesData = data?.tables || [];
+
+  // Fetch QR codes with authorization
+  const fetchQRCode = async (tableId) => {
+    const accessToken = localStorage.getItem("token");
+    try {
+      const response = await fetch(
+        `https://token-backend-omega.vercel.app/api/tokenman/games/${tableId}/qr-code`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        setQrCodeImages((prev) => ({ ...prev, [tableId]: imageUrl }));
+      }
+    } catch (error) {
+      console.error(`Failed to fetch QR code for ${tableId}:`, error);
+    }
+  };
+
+  // Fetch QR codes when tables data changes
+  React.useEffect(() => {
+    if (tablesData.length > 0) {
+      tablesData.forEach((table) => {
+        if (table.tableId && !qrCodeImages[table.tableId]) {
+          fetchQRCode(table.tableId);
+        }
+      });
+    }
+  }, [tablesData]);
+
+  // Cleanup blob URLs when component unmounts
+  React.useEffect(() => {
+    return () => {
+      Object.values(qrCodeImages).forEach((url) => {
+        if (url) URL.revokeObjectURL(url);
+      });
+    };
+  }, [qrCodeImages]);
+
+  // Format date and time helper functions
+  const formatDate = (isoString) => {
+    if (!isoString) return "N/A";
+    const date = new Date(isoString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  const formatTime = (isoString) => {
+    if (!isoString) return "N/A";
+    const date = new Date(isoString);
+    return date.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
+  const handleDownloadQRCode = async (tableId) => {
+    const accessToken = localStorage.getItem("token");
+    try {
+      Notify.info("Downloading QR Code...");
+
+      const response = await fetch(
+        `https://token-backend-omega.vercel.app/api/tokenman/games/${tableId}/qr-code`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      );
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `QRCode-${tableId}.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        Notify.success("QR Code downloaded successfully");
+      } else {
+        const error = await response.json();
+        Notify.failure(error.message || "Failed to download QR code");
+      }
+    } catch (error) {
+      console.error("Download error:", error);
+      Notify.failure("Failed to download QR code");
+    }
+  };
+
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to remove this table?")) {
-      setTablesData(tablesData.filter((item) => item.id !== id));
-      const newTotal = tablesData.length - 1;
-      const newTotalPages = Math.ceil(newTotal / itemsPerPage);
-      if (currentPage > newTotalPages) {
-        setCurrentPage(newTotalPages || 1);
+      const accessToken = localStorage.getItem("token");
+      try {
+        const response = await fetch(
+          `https://token-backend-omega.vercel.app/api/tokenman/game/${id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        if (response.ok) {
+          Notify.success("Table deleted successfully");
+          refetch(); // Refetch the data after deletion
+          const newTotal = tablesData.length - 1;
+          const newTotalPages = Math.ceil(newTotal / itemsPerPage);
+          if (currentPage > newTotalPages) {
+            setCurrentPage(newTotalPages || 1);
+          }
+        } else {
+          const error = await response.json();
+          Notify.failure(error.message || "Failed to delete table");
+        }
+      } catch (error) {
+        Notify.failure("Failed to delete table");
       }
     }
   };
@@ -132,7 +188,7 @@ export default function AvailableTable() {
       !newTable.scheduledStartTime ||
       !newTable.scheduledEndTime
     ) {
-      alert("Please fill in all fields");
+      Notify.failure("Please fill in all fields");
       return;
     }
 
@@ -169,13 +225,14 @@ export default function AvailableTable() {
           scheduledStartTime: "",
           scheduledEndTime: "",
         });
-        alert("Table created successfully");
+        Notify.success("Table created successfully");
+        refetch(); // Refetch the data after creation
       } else {
         const error = await response.json();
-        alert(error.message || "Failed to create table");
+        Notify.failure(error.message || "Failed to create table");
       }
     } catch (error) {
-      alert("Failed to create table");
+      Notify.failure("Failed to create table. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -186,9 +243,9 @@ export default function AvailableTable() {
     (t) => t.status === "Reserved",
   ).length;
   const boughtTables = tablesData.filter((t) => t.status === "Buy").length;
-  const totalRevenue = tablesData.reduce((sum, t) => sum + t.revenue, 0);
+  const totalRevenue = tablesData.reduce((sum, t) => sum + (t.revenue || 0), 0);
   const totalCommission = tablesData.reduce(
-    (sum, t) => sum + t.commission * t.totalTokensSold,
+    (sum, t) => sum + (t.commission || 0) * (t.totalTokensSold || 0),
     0,
   );
 
@@ -211,13 +268,40 @@ export default function AvailableTable() {
     return badges[status] || "bg-gray-100 text-gray-800";
   };
 
-  const getStatusIcon = (status) => {
-    const icons = {
-      Reserved: <Lock size={14} />,
-      Buy: <Coins size={14} />,
-    };
-    return icons[status] || <Table size={14} />;
-  };
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#F59E0B] mx-auto"></div>
+            <p className="mt-4 text-slate-600">Loading tables...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-white rounded-xl shadow-md border border-slate-200 p-8 text-center">
+            <p className="text-red-600">
+              Error loading tables. Please try again.
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-4 px-4 py-2 bg-[#F59E0B] hover:bg-[#D97706] text-white font-semibold rounded-lg"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 p-4 sm:p-6 lg:p-8">
@@ -226,7 +310,7 @@ export default function AvailableTable() {
         <div className="mb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className=" font-bold text-slate-900">
+              <h1 className=" font-bold text-[19px] text-slate-900">
                 Tables & Token Pricing
               </h1>
               <p className="text-sm lg:text-base text-slate-600">
@@ -250,7 +334,16 @@ export default function AvailableTable() {
               <thead>
                 <tr className=" bg-[#F59E0B]">
                   <th className="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs lg:text-sm font-semibold text-white whitespace-nowrap">
-                    Table Name
+                    QR Code
+                  </th>
+                  <th className="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs lg:text-sm font-semibold text-white whitespace-nowrap">
+                    Game Date
+                  </th>
+                  <th className="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs lg:text-sm font-semibold text-white whitespace-nowrap">
+                    Start Time
+                  </th>
+                  <th className="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs lg:text-sm font-semibold text-white whitespace-nowrap">
+                    End Time
                   </th>
                   <th className="px-4 lg:px-6 py-3 lg:py-4 text-left text-xs lg:text-sm font-semibold text-white whitespace-nowrap">
                     Status
@@ -267,84 +360,124 @@ export default function AvailableTable() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                {currentData.map((table) => (
-                  <tr
-                    key={table.id}
-                    className="hover:bg-slate-50 transition-colors"
-                  >
-                    <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm font-semibold text-slate-900 whitespace-nowrap">
-                      {table.name}
-                    </td>
-                    <td className="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusBadge(table.status)}`}
-                      >
-                        {getStatusIcon(table.status)}
-                        {table.status}
-                      </span>
-                    </td>
-                    <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm font-bold text-blue-600 whitespace-nowrap">
-                      {table.tokenPrice.toLocaleString()} RWF
-                    </td>
-                    <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm font-bold text-emerald-600 whitespace-nowrap">
-                      {table.commission.toLocaleString()} RWF
-                    </td>
-                    <td className="px-4 lg:px-6 py-3 lg:py-4 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-2">
-                        <button
-                          onClick={() => handleDelete(table.id)}
-                          className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-600 hover:bg-red-200 transition-colors"
-                          title="Delete table"
+                {currentData.length > 0 ? (
+                  currentData.map((table) => (
+                    <tr
+                      key={table.tableId}
+                      className="hover:bg-slate-50 transition-colors"
+                    >
+                      <td className="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
+                        <div className="flex items-center justify-center">
+                          {qrCodeImages[table.tableId] ? (
+                            <img
+                              src={qrCodeImages[table.tableId]}
+                              alt={`QR Code for ${table.tableId}`}
+                              className="w-16 h-16 object-contain border border-slate-200 rounded"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 flex items-center justify-center bg-slate-100 rounded border border-slate-200">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F59E0B]"></div>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm text-slate-700 whitespace-nowrap">
+                        {formatDate(table.gameDate)}
+                      </td>
+                      <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm text-slate-700 whitespace-nowrap">
+                        {formatTime(table.scheduledStartTime)}
+                      </td>
+                      <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm text-slate-700 whitespace-nowrap">
+                        {formatTime(table.scheduledEndTime)}
+                      </td>
+                      <td className="px-4 lg:px-6 py-3 lg:py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusBadge(table.status)}`}
                         >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                          {table.status || "Pending"}
+                        </span>
+                      </td>
+                      <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm font-bold text-blue-600 whitespace-nowrap">
+                        {table.tokenPrice?.toLocaleString() || 0} RWF
+                      </td>
+                      <td className="px-4 lg:px-6 py-3 lg:py-4 text-xs lg:text-sm font-bold text-emerald-600 whitespace-nowrap">
+                        {table.commission?.toLocaleString() || 0} RWF
+                      </td>
+                      <td className="px-4 lg:px-6 py-3 lg:py-4 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleDownloadQRCode(table.tableId)}
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-100 transition-colors"
+                            title="Download QR Code"
+                          >
+                            <Download size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(table._id || table.id)}
+                            className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-600 hover:bg-red-200 transition-colors"
+                            title="Delete table"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan="8"
+                      className="px-4 lg:px-6 py-8 text-center text-slate-500"
+                    >
+                      No tables found. Create your first table!
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
 
           {/* Pagination */}
-          <div className="px-4 lg:px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <p className="text-xs lg:text-sm text-slate-600">
-              Showing {startIndex + 1} to{" "}
-              {Math.min(endIndex, tablesData.length)} of {tablesData.length}{" "}
-              entries
-            </p>
-            <div className="flex gap-2">
-              <button
-                onClick={goToPrevious}
-                disabled={currentPage === 1}
-                className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-
-              {[...Array(totalPages)].map((_, index) => (
+          {tablesData.length > 0 && (
+            <div className="px-4 lg:px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <p className="text-xs lg:text-sm text-slate-600">
+                Showing {startIndex + 1} to{" "}
+                {Math.min(endIndex, tablesData.length)} of {tablesData.length}{" "}
+                entries
+              </p>
+              <div className="flex gap-2">
                 <button
-                  key={index + 1}
-                  onClick={() => goToPage(index + 1)}
-                  className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                    currentPage === index + 1
-                      ? "bg-[#F59E0B] text-white hover:bg-cyan-600"
-                      : "border border-slate-300 hover:bg-slate-50"
-                  }`}
+                  onClick={goToPrevious}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {index + 1}
+                  Previous
                 </button>
-              ))}
 
-              <button
-                onClick={goToNext}
-                disabled={currentPage === totalPages}
-                className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
+                {[...Array(totalPages)].map((_, index) => (
+                  <button
+                    key={index + 1}
+                    onClick={() => goToPage(index + 1)}
+                    className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+                      currentPage === index + 1
+                        ? "bg-[#F59E0B] text-white hover:bg-cyan-600"
+                        : "border border-slate-300 hover:bg-slate-50"
+                    }`}
+                  >
+                    {index + 1}
+                  </button>
+                ))}
+
+                <button
+                  onClick={goToNext}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

@@ -101,7 +101,6 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
               {t("nav.home")}
             </button>
 
-
             <Link
               to="/game"
               className="relative text-white font-medium text-[16px] px-3 py-2 transition-all duration-300 hover:text-[#F49B0F] inline-block"
@@ -109,12 +108,12 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
               {t("Game")}
             </Link>
 
-            <button
+            <Link
+              to="/login"
               className="relative text-white font-medium text-[16px] px-3 py-2 transition-all duration-300 hover:text-[#F49B0F] inline-block"
-              onClick={() => scrollToSection("contact")}
             >
-              {t("nav.contact")}
-            </button>
+              {t("Login")}
+            </Link>
 
             {/* Language Selector */}
             <div className="ml-30 relative">
@@ -165,19 +164,6 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
             {t("nav.home")}
           </button>
 
-          <button
-            className="text-white text-lg font-medium py-3.5 px-4 text-left transition-all duration-300 rounded-lg hover:text-[#F49B0F] hover:bg-white/5"
-            onClick={() => scrollToSection("services")}
-          >
-            {t("nav.services")}
-          </button>
-
-          <button
-            className="text-white text-lg font-medium py-3.5 px-4 text-left transition-all duration-300 rounded-lg hover:text-[#F49B0F] hover:bg-white/5"
-            onClick={() => scrollToSection("about")}
-          >
-            {t("nav.about")}
-          </button>
 
           <Link
             to="/game"
@@ -187,12 +173,13 @@ function Navbar({ selectedLanguage, handleLanguageChange, languages }) {
             {t("game")}
           </Link>
 
-          <button
-            className="text-white text-lg font-medium py-3.5 px-4 text-left transition-all duration-300 rounded-lg hover:text-[#F49B0F] hover:bg-white/5"
-            onClick={() => scrollToSection("contact")}
+          <Link
+            to="/login"
+            className="text-white text-lg font-medium py-3.5 px-4 text-left transition-all duration-300 rounded-lg hover:text-[#F49B0F] hover:bg-white/5 block"
+            onClick={() => setIsMobileMenuOpen(false)}
           >
-            {t("nav.contact")}
-          </button>
+            {t("Login")}
+          </Link>
 
           {/* Mobile Language Selector */}
           <div className="pt-6 border-t border-white/20 mt-6">

@@ -46,7 +46,7 @@ export default function AdminTokenManagement() {
         Notiflix.Loading.standard("Deleting user...");
         try {
           const response = await fetch(
-            `https://token-backend-omega.vercel.app/api/admin/token-men/${user._id}`,
+            `https://token-backend-omega.vercel.app/api/admin/token-men/${user._id}/delete?permanent=false`,
             {
               method: "DELETE",
               headers: {

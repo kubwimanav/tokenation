@@ -11,15 +11,7 @@ const NavbarToken = () => {
     <>
       <header className="bg-white shadow-sm px-3 sm:px-6 py-3 flex items-center justify-between z-30 relative">
         {/* Logo and Menu Toggle */}
-          {/* Menu toggle button - only visible on mobile */}
-          {isMobile && (
-            <button
-              className="p-1 mr-2 text-gray-500 hover:text-gray-700 focus:outline-none"
-              aria-label="Toggle sidebar"
-            >
-              <Menu className="h-6 w-6" />
-            </button>
-          )}
+      
 
           {/* Logo */}
           

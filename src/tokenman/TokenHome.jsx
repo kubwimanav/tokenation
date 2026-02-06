@@ -17,11 +17,13 @@ import {
   MdInsertDriveFile,
   MdOutlineInsertDriveFile,
 } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { data, Link } from "react-router-dom";
 import { DollarSign } from "lucide-react";
 import { IoTabletLandscape } from "react-icons/io5";
+import { useGetMytablesQuery } from "../Api/tokenman/tokenman";
 
 function TokenHome() {
+  const { data: tables } = useGetMytablesQuery();
   const revenueData = [
     { name: "Jan", revenue: 18500 },
     { name: "Feb", revenue: 21200 },
@@ -63,7 +65,7 @@ function TokenHome() {
           <div className="bg-white rounded-xl shadow-lg p-5 flex justify-between items-center hover:shadow-xl transition-shadow">
             <div className="flex flex-col">
               <span className="text-sm text-[#2d4a3e] font-medium">Tables</span>
-              <span className="text-xs font-bold mt-1 text-[#2d4a3e]">10</span>
+              <span className="text-xs font-bold mt-1 text-[#2d4a3e]">{data?.length || 0}</span>
               <span className="text-xs text-[#F49B0F] font-medium mt-1">
                 Total Available Tables
               </span>
