@@ -33,6 +33,12 @@ export const productApi = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+    getEarnings: builder.query({
+      query: () => ({
+        url: "api/tokenman/earnings",
+        method: "GET",
+      }),
+    }),
 
     createcontact: builder.mutation({
       query: (data) => ({
@@ -58,11 +64,12 @@ export const productApi = apiSlice.injectEndpoints({
 });
 
 export const {
-    useGetGameHistoryQuery,
-    useGetUserHistoryQuery,
-    useGetMytablesQuery,
+  useGetGameHistoryQuery,
+  useGetUserHistoryQuery,
+  useGetMytablesQuery,
   useGetCommissionsQuery,
   useGetQrcodeQuery,
+  useGetEarningsQuery,
   useCreatecontactMutation,
   useDeletecontactMutation,
   useDeleteMatchitemMutation,

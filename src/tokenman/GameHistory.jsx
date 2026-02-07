@@ -151,10 +151,10 @@ export default function GameHistory() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-350 mx-auto w-full">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-3">
           <h1 className="text-[19px] font-bold text-gray-900 mb-2">
             Game & Earnings History
           </h1>
